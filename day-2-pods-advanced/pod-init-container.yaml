@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-init-container
+spec:
+  # O InitContainer roda PRIMEIRO. Se ele falhar, o resto nem tenta subir.
+  initContainers:
+  - name: preparador
+    image: busybox
+    command: ['sh', '-c', 'echo "Setup finalizado pelo InitContainer" > /work-dir/index.html']
+    volumeMounts:
+    - name: workdir
+      mountPath: /work-dir
+
+  # Container Principal (só inicia após o 'preparador' terminar com sucesso)
+  containers:
+  - name: nginx
+    image: nginx
+    ports:
+    - containerPort: 80
+    volumeMounts:
+    - name: workdir
+      mountPath: /usr/share/nginx/html
+
+  volumes:
+  - name: workdir
+    emptyDir: {}
