@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-multi-container
+  labels:
+    app: sidecar-test
+spec:
+  volumes:
+  - name: volume-compartilhado
+    emptyDir: {}
+
+  containers:
+  # Container 1: Gera conteúdo (Simula uma aplicação escrevendo logs)
+  - name: nginx-container
+    image: nginx
+    volumeMounts:
+    - name: volume-compartilhado
+      mountPath: /usr/share/nginx/html
+
+  # Container 2: Sidecar que altera o conteúdo (Simula um agente ou processador)
+  - name: sidecar-container
+    image: busybox
+    args:
+    - /bin/sh
+    - -c
+    - >
+      while true; do
+        date >> /var/log/index.html;
+        sleep 5;
+      done
+    volumeMounts:
+    - name: volume-compartilhado
+      mountPath: /var/log
